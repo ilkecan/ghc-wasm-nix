@@ -57,6 +57,10 @@
     {
       lib = { inherit mkGhc mkPackageSet; };
 
+      overlays.default = final: _prev: {
+        haskellWasmPackages = mkPackageSet { pkgs = final; };
+      };
+
       packages = forAllSystems (
         system:
         let

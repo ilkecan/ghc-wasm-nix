@@ -39,15 +39,30 @@
           wasiSdk = metaPackages.wasi-sdk;
           version = "9.14.1.20260731";
         };
+
+      mkPackageSet =
+        {
+          packageSetConfig ? (_final: _prev: { }),
+          pkgs,
+        }:
+        let
+          ghc = mkGhc { inherit pkgs; };
+        in
+        import ./lib/package-set.nix { nixpkgsSrc = pkgs.path; } {
+          inherit ghc packageSetConfig;
+          buildHaskellPackages = pkgs.haskell.packages.ghc9141;
+          wasmPkgs = pkgs.pkgsCross.wasi32;
+        };
     in
     {
-      lib = { inherit mkGhc; };
+      lib = { inherit mkGhc mkPackageSet; };
 
       packages = forAllSystems (
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          ghc = mkGhc { inherit pkgs; };
+          haskellPackages = mkPackageSet { inherit pkgs; };
+          inherit (haskellPackages) ghc;
         in
         {
           inherit ghc;

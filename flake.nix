@@ -67,6 +67,48 @@
         {
           inherit ghc;
           default = ghc;
+
+          interpreter-check = self.checks.${system}.interpreter;
+        }
+      );
+
+      checks = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          interpreter =
+            let
+              haskellPackages = mkPackageSet {
+                inherit pkgs;
+                packageSetConfig = final: prev: {
+                  # ghc-wasm-meta wraps GHC with Node. Remove that wrapper so
+                  # this check verifies that nixpkgs supplies Node to the build
+                  # environment.
+                  ghc = prev.ghc.overrideAttrs {
+                    postInstall = "";
+                  };
+
+                  mkDerivation =
+                    args:
+                    prev.mkDerivation (
+                      args
+                      // {
+                        # keep unrelated wasm integration issues out of this check
+                        doHaddock = false;
+                        enableSharedLibraries = true;
+                        configureFlags = (args.configureFlags or [ ]) ++ [
+                          "--with-gcc=${final.ghc.wasiSdk}/bin/wasm32-wasi-clang"
+                          "--with-ar=${final.ghc.wasiSdk}/bin/llvm-ar"
+                          "--with-ld=${final.ghc.wasiSdk}/bin/wasm-ld"
+                        ];
+                      }
+                    );
+                };
+              };
+            in
+            haskellPackages.callPackage ./checks/interpreter { };
         }
       );
     };

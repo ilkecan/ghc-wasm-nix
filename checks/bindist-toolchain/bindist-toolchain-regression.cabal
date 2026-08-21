@@ -1,0 +1,11 @@
+cabal-version: 3.0
+name: bindist-toolchain-regression
+version: 0.0.0.0
+build-type: Configure
+
+library
+  exposed-modules: BindistToolchain
+  hs-source-dirs: src
+  c-sources: cbits/repro.c
+  build-depends: base
+  default-language: GHC2024

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -eu
+
+for arg in "$@"; do
+  case "$arg" in
+  CC=*) CC=${arg#CC=} ;;
+  esac
+done
+
+printf '%s\n' 'int main(void) { return 0; }' > conftest.c
+"$CC" ${CFLAGS:-} conftest.c -o conftest

@@ -103,33 +103,34 @@
 
       perSystem =
         { pkgs, ... }:
+        let
+          haskellPackages = mkPackageSet { inherit pkgs; };
+          inherit (haskellPackages) ghc;
+        in
         {
-          packages =
-            let
-              haskellPackages = mkPackageSet { inherit pkgs; };
-              inherit (haskellPackages) ghc;
-            in
-            {
-              inherit ghc;
-              default = ghc;
+          packages = {
+            inherit ghc;
+            default = ghc;
 
-              haddock-repro = import ./repros/haddock/repro.nix {
-                inherit pkgs;
-                mkPackageSet = mkRawPackageSet;
-              };
-
-              interpreter-repro = import ./repros/interpreter/repro.nix {
-                inherit pkgs;
-                mkPackageSet = mkRawPackageSet;
-              };
-
-              shared-libraries-repro = import ./repros/shared-libraries/repro.nix {
-                inherit pkgs;
-                mkPackageSet = mkRawPackageSet;
-              };
+            haddock-repro = import ./repros/haddock/repro.nix {
+              inherit pkgs;
+              mkPackageSet = mkRawPackageSet;
             };
 
-          checks = { };
+            interpreter-repro = import ./repros/interpreter/repro.nix {
+              inherit pkgs;
+              mkPackageSet = mkRawPackageSet;
+            };
+
+            shared-libraries-repro = import ./repros/shared-libraries/repro.nix {
+              inherit pkgs;
+              mkPackageSet = mkRawPackageSet;
+            };
+          };
+
+          checks = {
+            bindist-toolchain = haskellPackages.callPackage ./checks/bindist-toolchain { };
+          };
         };
     };
 }

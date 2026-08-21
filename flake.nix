@@ -119,8 +119,9 @@
         };
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
-      # ghc-wasm-meta has to ship a bindist and nixpkgs has to compile natively
-      systems = lib.intersectLists (lib.attrNames ghc-wasm-meta.packages) lib.systems.flakeExposed;
+      # Build the flake on every system exposed by nixpkgs for which
+      # ghc-wasm-meta publishes at least one compiler bindist.
+      systems = lib.intersectLists compilers.systems lib.systems.flakeExposed;
 
       flake = {
         lib = { inherit mkGhc mkPackageSet; };

@@ -19,9 +19,12 @@
     {
       flake-parts,
       ghc-wasm-meta,
+      nixpkgs,
       ...
     }@inputs:
     let
+      inherit (nixpkgs) lib;
+
       mkGhc =
         {
           pkgs,
@@ -52,11 +55,8 @@
         };
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [
-        "aarch64-darwin"
-        "aarch64-linux"
-        "x86_64-linux"
-      ];
+      # ghc-wasm-meta has to ship a bindist and nixpkgs has to compile natively
+      systems = lib.intersectLists (lib.attrNames ghc-wasm-meta.packages) lib.systems.flakeExposed;
 
       flake = {
         lib = { inherit mkGhc mkPackageSet; };

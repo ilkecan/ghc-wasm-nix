@@ -67,7 +67,7 @@
       };
 
       perSystem =
-        { config, pkgs, ... }:
+        { pkgs, ... }:
         {
           packages =
             let
@@ -78,70 +78,16 @@
               inherit ghc;
               default = ghc;
 
-              haddock-check = config.checks.haddock;
-              interpreter-check = config.checks.interpreter;
+              haddock-repro = import ./repros/haddock/repro.nix {
+                inherit mkPackageSet pkgs;
+              };
+
+              interpreter-repro = import ./repros/interpreter/repro.nix {
+                inherit mkPackageSet pkgs;
+              };
             };
 
-          checks = {
-            haddock =
-              let
-                haskellPackages = mkPackageSet {
-                  inherit pkgs;
-                  packageSetConfig = final: prev: {
-                    mkDerivation =
-                      args:
-                      prev.mkDerivation (
-                        args
-                        // {
-                          # isolate Haddock from the wasm interpreter changes
-                          doHaddock = true;
-                          enableExternalInterpreter = false;
-                          enableLibraryProfiling = false;
-                          enableSharedLibraries = true;
-                          configureFlags = (args.configureFlags or [ ]) ++ [
-                            "--with-gcc=${final.ghc.wasiSdk}/bin/wasm32-wasi-clang"
-                            "--with-ar=${final.ghc.wasiSdk}/bin/llvm-ar"
-                            "--with-ld=${final.ghc.wasiSdk}/bin/wasm-ld"
-                          ];
-                        }
-                      );
-                  };
-                };
-              in
-              haskellPackages.callPackage ./checks/haddock { };
-
-            interpreter =
-              let
-                haskellPackages = mkPackageSet {
-                  inherit pkgs;
-                  packageSetConfig = final: prev: {
-                    # ghc-wasm-meta wraps GHC with Node. Remove that wrapper so
-                    # this check verifies that nixpkgs supplies Node to the build
-                    # environment.
-                    ghc = prev.ghc.overrideAttrs {
-                      postInstall = "";
-                    };
-
-                    mkDerivation =
-                      args:
-                      prev.mkDerivation (
-                        args
-                        // {
-                          # keep unrelated wasm integration issues out of this check
-                          doHaddock = false;
-                          enableSharedLibraries = true;
-                          configureFlags = (args.configureFlags or [ ]) ++ [
-                            "--with-gcc=${final.ghc.wasiSdk}/bin/wasm32-wasi-clang"
-                            "--with-ar=${final.ghc.wasiSdk}/bin/llvm-ar"
-                            "--with-ld=${final.ghc.wasiSdk}/bin/wasm-ld"
-                          ];
-                        }
-                      );
-                  };
-                };
-              in
-              haskellPackages.callPackage ./checks/interpreter { };
-          };
+          checks = { };
         };
     };
 }

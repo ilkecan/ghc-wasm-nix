@@ -85,6 +85,10 @@
               interpreter-repro = import ./repros/interpreter/repro.nix {
                 inherit mkPackageSet pkgs;
               };
+
+              shared-libraries-repro = import ./repros/shared-libraries/repro.nix {
+                inherit mkPackageSet pkgs;
+              };
             };
 
           checks = { };

@@ -1,0 +1,10 @@
+cabal-version: 3.0
+name: shared-libraries-dependency-repro
+version: 0.0.0.0
+build-type: Simple
+
+library
+  exposed-modules: Repro.Dependency
+  hs-source-dirs: src
+  build-depends: base, template-haskell
+  default-language: GHC2024

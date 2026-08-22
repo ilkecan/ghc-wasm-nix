@@ -20,11 +20,6 @@ final: prev: {
         # `network` package, which fails to build in this package set.
         enableExternalInterpreter = false;
 
-        # GHC runs the wasm interpreter through `dyld.mjs`, which requires
-        # Node. Without Node on PATH, Template Haskell fails with exit status
-        # 127.
-        buildTools = (args.buildTools or [ ]) ++ [ final.ghc.nodejs ];
-
         # The wasm interpreter loads dynamic objects. With library profiling
         # enabled, Template Haskell tries to load profiled dynamic objects,
         # which the Cabal build does not produce.

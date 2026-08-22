@@ -22,9 +22,10 @@ let
             doHaddock = false;
             enableSharedLibraries = true;
             configureFlags = (args.configureFlags or [ ]) ++ [
-              "--with-gcc=${final.ghc.wasiSdk}/bin/wasm32-wasi-clang"
               "--with-ar=${final.ghc.wasiSdk}/bin/llvm-ar"
+              "--with-gcc=${final.ghc.wasiSdk}/bin/wasm32-wasi-clang"
               "--with-ld=${final.ghc.wasiSdk}/bin/wasm-ld"
+              "--with-strip=${final.ghc.wasiSdk}/bin/llvm-strip"
             ];
           }
         );

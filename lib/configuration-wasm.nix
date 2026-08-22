@@ -35,6 +35,7 @@ final: prev: {
         # `isStatic`.
         enableSharedLibraries = true;
 
+        # Cabal uses the last value for repeated `--with-*` options.
         configureFlags =
           (args.configureFlags or [ ])
           ++ [
@@ -47,11 +48,14 @@ final: prev: {
             # the tools recorded in GHC's settings. Reading the installed
             # settings during Nix evaluation would require IFD, so the bindist
             # adapter exposes wasiSdk explicitly.
-            #
-            # Cabal uses the last value for repeated `--with-*` options.
-            "--with-gcc=${final.ghc.wasiSdk}/bin/wasm32-wasi-clang"
             "--with-ar=${final.ghc.wasiSdk}/bin/llvm-ar"
+            "--with-gcc=${final.ghc.wasiSdk}/bin/wasm32-wasi-clang"
             "--with-ld=${final.ghc.wasiSdk}/bin/wasm-ld"
+          ]
+          ++ [
+            # Use the strip tool from the WASI SDK paired with the bindist
+            # instead of nixpkgs's independently selected target tool.
+            "--with-strip=${final.ghc.wasiSdk}/bin/llvm-strip"
           ];
       }
     );

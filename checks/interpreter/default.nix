@@ -13,6 +13,7 @@ mkDerivation {
 
   isLibrary = true;
   isExecutable = false;
+  doHaddock = false;
 
   libraryHaskellDepends = [
     base

@@ -13,7 +13,6 @@ let
           args
           // {
             # keep unrelated wasm integration failures out of this repro
-            doHaddock = false;
             enableExternalInterpreter = false;
             enableLibraryProfiling = false;
             buildTools = (args.buildTools or [ ]) ++ [ final.ghc.nodejs ];
@@ -28,7 +27,7 @@ let
     };
   };
 
-  dependency = haskellPackages.callPackage ./dependency { };
+  dependency = haskellPackages.callPackage ../checks/shared-libraries/dependency { };
 in
 
-haskellPackages.callPackage ./default.nix { inherit dependency; }
+haskellPackages.callPackage ../checks/shared-libraries { inherit dependency; }

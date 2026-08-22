@@ -2,18 +2,23 @@
   lib,
   mkDerivation,
   base,
+  template-haskell,
 }:
 
 mkDerivation {
-  pname = "cross-haddock-repro";
+  pname = "shared-libraries-dependency-repro";
   version = "0.0.0.0";
 
   src = ./.;
 
   isLibrary = true;
   isExecutable = false;
+  doHaddock = false;
 
-  libraryHaskellDepends = [ base ];
+  libraryHaskellDepends = [
+    base
+    template-haskell
+  ];
 
   license = lib.licenses.bsd3;
 }

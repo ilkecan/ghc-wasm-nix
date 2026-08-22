@@ -7,15 +7,18 @@ let
   haskellPackages = mkPackageSet {
     inherit pkgs;
     packageSetConfig = final: prev: {
+      # ghc-wasm-meta wraps GHC with Node. Remove that wrapper so this repro
+      # verifies that nixpkgs supplies Node to the build environment.
+      ghc = prev.ghc.overrideAttrs {
+        postInstall = "";
+      };
+
       mkDerivation =
         args:
         prev.mkDerivation (
           args
           // {
-            # isolate Haddock from the wasm interpreter changes
-            doHaddock = true;
-            enableExternalInterpreter = false;
-            enableLibraryProfiling = false;
+            # keep unrelated wasm integration issues out of this repro
             enableSharedLibraries = true;
             configureFlags = (args.configureFlags or [ ]) ++ [
               "--with-ar=${final.ghc.wasiSdk}/bin/llvm-ar"
@@ -29,4 +32,4 @@ let
   };
 in
 
-haskellPackages.callPackage ./default.nix { }
+haskellPackages.callPackage ../checks/interpreter { }

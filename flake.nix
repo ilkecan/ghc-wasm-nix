@@ -112,17 +112,17 @@
             inherit ghc;
             default = ghc;
 
-            haddock-repro = import ./repros/haddock/repro.nix {
+            haddock-repro = import ./repros/haddock.nix {
               inherit pkgs;
               mkPackageSet = mkRawPackageSet;
             };
 
-            interpreter-repro = import ./repros/interpreter/repro.nix {
+            interpreter-repro = import ./repros/interpreter.nix {
               inherit pkgs;
               mkPackageSet = mkRawPackageSet;
             };
 
-            shared-libraries-repro = import ./repros/shared-libraries/repro.nix {
+            shared-libraries-repro = import ./repros/shared-libraries.nix {
               inherit pkgs;
               mkPackageSet = mkRawPackageSet;
             };
@@ -130,6 +130,13 @@
 
           checks = {
             bindist-toolchain = haskellPackages.callPackage ./checks/bindist-toolchain { };
+            haddock = haskellPackages.callPackage ./checks/haddock { };
+            interpreter = haskellPackages.callPackage ./checks/interpreter { };
+            shared-libraries =
+              let
+                dependency = haskellPackages.callPackage ./checks/shared-libraries/dependency { };
+              in
+              haskellPackages.callPackage ./checks/shared-libraries { inherit dependency; };
           };
         };
     };

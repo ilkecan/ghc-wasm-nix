@@ -71,6 +71,7 @@
           pkgs,
         }:
         let
+          inherit (pkgs) lib;
           wasmPkgs = pkgs.pkgsCross.wasi32;
         in
         mkPackageSetBase {
@@ -82,7 +83,7 @@
           # remove the static adapter's Cabal flags so configuration-wasm.nix
           # can enable shared libraries
           stdenv = wasmPkgs.stdenvAdapters.overrideMkDerivationArgs (oldAttrs: {
-            configureFlags = wasmPkgs.lib.subtractLists [
+            configureFlags = lib.subtractLists [
               "--enable-static"
               "--disable-shared"
             ] (oldAttrs.configureFlags or [ ]);

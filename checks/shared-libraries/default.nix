@@ -2,10 +2,13 @@
   lib,
   mkDerivation,
   base,
-  dependency,
+  callPackage,
   template-haskell,
 }:
 
+let
+  dependency = callPackage ./dependency { };
+in
 mkDerivation {
   pname = "shared-libraries-repro";
   version = "0.0.0.0";

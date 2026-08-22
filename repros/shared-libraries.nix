@@ -26,8 +26,6 @@ let
         );
     };
   };
-
-  dependency = haskellPackages.callPackage ../checks/shared-libraries/dependency { };
 in
 
-haskellPackages.callPackage ../checks/shared-libraries { inherit dependency; }
+haskellPackages.callPackage ../checks/shared-libraries { }

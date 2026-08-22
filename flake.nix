@@ -133,11 +133,7 @@
             bindist-toolchain = haskellPackages.callPackage ./checks/bindist-toolchain { };
             haddock = haskellPackages.callPackage ./checks/haddock { };
             interpreter = haskellPackages.callPackage ./checks/interpreter { };
-            shared-libraries =
-              let
-                dependency = haskellPackages.callPackage ./checks/shared-libraries/dependency { };
-              in
-              haskellPackages.callPackage ./checks/shared-libraries { inherit dependency; };
+            shared-libraries = haskellPackages.callPackage ./checks/shared-libraries { };
           };
         };
     };

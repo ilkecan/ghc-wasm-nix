@@ -113,6 +113,16 @@
           '';
         in
         {
+          apps = {
+            update-versions.program = lib.getExe (
+              pkgs.writeShellApplication {
+                name = "update-versions";
+                runtimeInputs = with pkgs; [ nushell ];
+                text = ''exec ${./scripts/update-versions.nu} ${ghc-wasm-meta} > "''${1:-versions.json}"'';
+              }
+            );
+          };
+
           packages = {
             inherit ghc;
             default = ghc;

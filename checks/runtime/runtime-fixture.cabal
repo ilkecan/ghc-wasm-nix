@@ -1,0 +1,10 @@
+cabal-version: 3.0
+name: runtime-fixture
+version: 0.0.0.0
+build-type: Simple
+
+executable runtime-fixture
+  main-is: Main.hs
+  hs-source-dirs: src
+  build-depends: base
+  default-language: Haskell2010

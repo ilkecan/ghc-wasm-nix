@@ -1,5 +1,4 @@
 {
-  lib,
   mkDerivation,
   base,
 }:
@@ -15,6 +14,4 @@ mkDerivation {
   doHaddock = true;
 
   libraryHaskellDepends = [ base ];
-
-  license = lib.licenses.bsd3;
 }

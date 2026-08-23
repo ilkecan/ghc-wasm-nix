@@ -1,5 +1,4 @@
 {
-  lib,
   mkDerivation,
   base,
   template-haskell,
@@ -19,6 +18,4 @@ mkDerivation {
     base
     template-haskell
   ];
-
-  license = lib.licenses.bsd3;
 }

@@ -72,6 +72,4 @@ mkDerivation {
       exit 1
     fi
   '';
-
-  license = lib.licenses.bsd3;
 }

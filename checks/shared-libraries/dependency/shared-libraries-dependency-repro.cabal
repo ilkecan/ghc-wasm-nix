@@ -7,4 +7,4 @@ library
   exposed-modules: Repro.Dependency
   hs-source-dirs: src
   build-depends: base, template-haskell
-  default-language: GHC2024
+  default-language: Haskell2010

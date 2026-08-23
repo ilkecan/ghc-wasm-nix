@@ -144,6 +144,14 @@
               '';
               expected = runtimeExpected;
             };
+            runtime-wasmer = pkgs.testers.testEqualContents {
+              assertion = "Wasmer runs the wasm fixture";
+              actual = pkgs.runCommand "runtime-wasmer-output" { } ''
+                ${pkgs.wasmer}/bin/wasmer run \
+                  ${runtimeFixture}/bin/runtime-fixture.wasm > "$out"
+              '';
+              expected = runtimeExpected;
+            };
             template-haskell = haskellPackages.callPackage ./checks/template-haskell { };
             shared-libraries = haskellPackages.callPackage ./checks/shared-libraries { };
           };

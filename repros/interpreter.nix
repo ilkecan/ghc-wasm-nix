@@ -1,3 +1,4 @@
+# Reproduces nixpkgs behavior before PR #553410 as a whole.
 {
   mkPackageSet,
   pkgs,
@@ -7,8 +8,8 @@ let
   haskellPackages = mkPackageSet {
     inherit pkgs;
     packageSetConfig = final: prev: {
-      # ghc-wasm-meta wraps GHC with Node. Remove that wrapper so this repro
-      # verifies that nixpkgs supplies Node to the build environment.
+      # ghc-wasm-meta wraps GHC with Node. Remove that wrapper so the repro
+      # also verifies that nixpkgs supplies Node to the build environment.
       ghc = prev.ghc.overrideAttrs {
         postInstall = "";
       };
@@ -32,4 +33,4 @@ let
   };
 in
 
-haskellPackages.callPackage ../checks/interpreter { }
+haskellPackages.callPackage ../checks/template-haskell { }

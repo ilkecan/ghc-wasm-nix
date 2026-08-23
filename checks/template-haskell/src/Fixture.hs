@@ -1,8 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Repro (value) where
+module Fixture (value) where
 
-import Repro.Splice (makeValue)
+import Fixture.Splice (makeValue)
 
 value :: String
 value = $(makeValue)

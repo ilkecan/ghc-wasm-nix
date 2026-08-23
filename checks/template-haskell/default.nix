@@ -6,7 +6,7 @@
 }:
 
 mkDerivation {
-  pname = "wasm-interpreter-repro";
+  pname = "template-haskell-fixture";
   version = "0.0.0.0";
 
   src = ./.;

@@ -132,7 +132,7 @@
           checks = {
             bindist-toolchain = haskellPackages.callPackage ./checks/bindist-toolchain { };
             haddock = haskellPackages.callPackage ./checks/haddock { };
-            interpreter = haskellPackages.callPackage ./checks/interpreter { };
+            template-haskell = haskellPackages.callPackage ./checks/template-haskell { };
             shared-libraries = haskellPackages.callPackage ./checks/shared-libraries { };
           };
         };

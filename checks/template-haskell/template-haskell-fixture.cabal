@@ -1,11 +1,11 @@
 cabal-version: 3.0
-name: wasm-interpreter-repro
+name: template-haskell-fixture
 version: 0.0.0.0
 build-type: Simple
 
 library
-  exposed-modules: Repro
-  other-modules: Repro.Splice
+  exposed-modules: Fixture
+  other-modules: Fixture.Splice
   hs-source-dirs: src
   build-depends: base, template-haskell
   default-language: GHC2024

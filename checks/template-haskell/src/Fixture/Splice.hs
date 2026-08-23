@@ -1,4 +1,4 @@
-module Repro.Splice (makeValue) where
+module Fixture.Splice (makeValue) where
 
 import Language.Haskell.TH (Exp, Q, stringE)
 

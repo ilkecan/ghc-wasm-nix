@@ -107,6 +107,10 @@
         let
           haskellPackages = mkPackageSet { inherit pkgs; };
           inherit (haskellPackages) ghc;
+          runtimeFixture = haskellPackages.callPackage ./checks/runtime { };
+          runtimeExpected = pkgs.writeText "runtime-expected" ''
+            wasm runtime ran
+          '';
         in
         {
           packages = {
@@ -132,6 +136,14 @@
           checks = {
             bindist-toolchain = haskellPackages.callPackage ./checks/bindist-toolchain { };
             haddock = haskellPackages.callPackage ./checks/haddock { };
+            runtime-wasmtime = pkgs.testers.testEqualContents {
+              assertion = "Wasmtime runs the wasm fixture";
+              actual = pkgs.runCommand "runtime-wasmtime-output" { } ''
+                ${pkgs.wasmtime}/bin/wasmtime run -C cache=n \
+                  ${runtimeFixture}/bin/runtime-fixture.wasm > "$out"
+              '';
+              expected = runtimeExpected;
+            };
             template-haskell = haskellPackages.callPackage ./checks/template-haskell { };
             shared-libraries = haskellPackages.callPackage ./checks/shared-libraries { };
           };

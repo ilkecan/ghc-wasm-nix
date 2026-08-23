@@ -136,6 +136,14 @@
           checks = {
             bindist-toolchain = haskellPackages.callPackage ./checks/bindist-toolchain { };
             haddock = haskellPackages.callPackage ./checks/haddock { };
+            runtime-node = pkgs.testers.testEqualContents {
+              assertion = "Node runs the wasm fixture";
+              actual = pkgs.runCommand "runtime-node-output" { } ''
+                ${pkgs.nodejs}/bin/node ${./checks/runtime/run-node.mjs} \
+                  ${runtimeFixture}/bin/runtime-fixture.wasm > "$out"
+              '';
+              expected = runtimeExpected;
+            };
             runtime-wasmtime = pkgs.testers.testEqualContents {
               assertion = "Wasmtime runs the wasm fixture";
               actual = pkgs.runCommand "runtime-wasmtime-output" { } ''

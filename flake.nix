@@ -25,57 +25,85 @@
     let
       inherit (nixpkgs) lib;
 
+      compilers = import ./lib/compilers.nix { inherit (nixpkgs) lib; } {
+        versions = builtins.fromJSON (builtins.readFile ./versions.json);
+        flavours = import ./flavours.nix;
+      };
+
       mkGhc =
         {
           pkgs,
+          flavour ? compilers.default,
         }:
         let
           inherit (pkgs.stdenv.hostPlatform) system;
           metaPackages = ghc-wasm-meta.packages.${system};
+          spec = compilers.all.${flavour};
         in
         import ./lib/ghc-bindist.nix { inherit (pkgs) lib; } {
-          ghc = metaPackages."wasm32-wasi-ghc-9_14";
+          ghc = metaPackages.${spec.metaAttr};
           inherit (metaPackages) nodejs;
           wasiSdk = metaPackages.wasi-sdk;
-          version = "9.14.1.20260731";
+          inherit (spec) version;
         };
 
       mkPackageSetBase =
         {
+          flavour,
           packageSetConfig,
           pkgs,
           stdenv,
         }:
         let
-          ghc = mkGhc { inherit pkgs; };
+          spec = compilers.all.${flavour};
+          ghc = mkGhc { inherit flavour pkgs; };
+          buildHaskellPackages =
+            if pkgs.haskell.packages ? ${spec.bootstrapAttr} then
+              pkgs.haskell.packages.${spec.bootstrapAttr}
+            else if spec.fallbackAttr != null then
+              if pkgs.haskell.packages ? ${spec.fallbackAttr} then
+                lib.warn ''
+                  ghc-wasm ${flavour}: nixpkgs does not provide bootstrap ${spec.bootstrapAttr} for bindist ${spec.version}; falling back to haskell.packages.${spec.fallbackAttr}
+                ''
+                pkgs.haskell.packages.${spec.fallbackAttr}
+              else
+                throw ''
+                  ghc-wasm ${flavour}: neither bootstrap ${spec.bootstrapAttr} nor fallback ${spec.fallbackAttr} exists in nixpkgs
+                ''
+            else
+              throw ''
+                ghc-wasm ${flavour}: bootstrap ${spec.bootstrapAttr} does not exist in nixpkgs and this flavour has no fallback bootstrap
+              '';
         in
         import ./lib/package-set.nix { nixpkgsSrc = pkgs.path; } {
-          inherit ghc packageSetConfig stdenv;
-          buildHaskellPackages = pkgs.haskell.packages.ghc9141;
+          inherit ghc packageSetConfig stdenv buildHaskellPackages;
+          compilerConfigFile = spec.compilerConfigFile;
           wasmPkgs = pkgs.pkgsCross.wasi32;
         };
 
       mkRawPackageSet =
         {
-          packageSetConfig ? (_final: _prev: { }),
           pkgs,
+          flavour ? compilers.default,
+          packageSetConfig ? (_final: _prev: { }),
         }:
         mkPackageSetBase {
-          inherit packageSetConfig pkgs;
+          inherit flavour packageSetConfig pkgs;
           stdenv = pkgs.pkgsCross.wasi32.stdenv;
         };
 
       mkPackageSet =
         {
-          packageSetConfig ? (_final: _prev: { }),
           pkgs,
+          flavour ? compilers.default,
+          packageSetConfig ? (_final: _prev: { }),
         }:
         let
           inherit (pkgs) lib;
           wasmPkgs = pkgs.pkgsCross.wasi32;
         in
         mkPackageSetBase {
-          inherit pkgs;
+          inherit flavour pkgs;
           packageSetConfig = lib.composeManyExtensions [
             (import ./lib/configuration-wasm.nix)
             packageSetConfig

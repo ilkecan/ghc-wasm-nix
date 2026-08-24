@@ -7,6 +7,7 @@
 let
   haskellPackages = mkPackageSet {
     inherit pkgs;
+    flavour = "9.14";
     packageSetConfig = final: prev: {
       # ghc-wasm-meta wraps GHC with Node. Remove that wrapper so the repro
       # also verifies that nixpkgs supplies Node to the build environment.

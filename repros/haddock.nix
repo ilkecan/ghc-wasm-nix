@@ -6,6 +6,7 @@
 let
   haskellPackages = mkPackageSet {
     inherit pkgs;
+    flavour = "9.14";
     packageSetConfig = final: prev: {
       mkDerivation =
         args:

@@ -1,0 +1,47 @@
+{
+  "gmp": {
+    "version": "10.1.20260729",
+    "systems": [
+      "x86_64-linux"
+    ]
+  },
+  "9.14": {
+    "version": "9.14.1.20260731",
+    "systems": [
+      "aarch64-darwin",
+      "aarch64-linux",
+      "x86_64-darwin",
+      "x86_64-linux"
+    ]
+  },
+  "9.12": {
+    "version": "9.12.4.20260731",
+    "systems": [
+      "aarch64-darwin",
+      "aarch64-linux",
+      "x86_64-darwin",
+      "x86_64-linux"
+    ]
+  },
+  "9.10": {
+    "version": "9.10.3.20260731",
+    "systems": [
+      "aarch64-darwin",
+      "aarch64-linux",
+      "x86_64-darwin",
+      "x86_64-linux"
+    ]
+  },
+  "9.8": {
+    "version": "9.8.4.20250206",
+    "systems": [
+      "x86_64-linux"
+    ]
+  },
+  "9.6": {
+    "version": "9.6.7.20250206",
+    "systems": [
+      "x86_64-linux"
+    ]
+  }
+}

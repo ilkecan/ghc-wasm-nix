@@ -130,12 +130,27 @@
 
         overlays.default = final: _prev:
           let
+            available = compilers.availableFor final.stdenv.hostPlatform.system;
+            mkCompiler = flavour: spec:
+              lib.nameValuePair spec.attrName (
+                mkGhc {
+                  inherit flavour;
+                  pkgs = final;
+                }
+              );
             mkPackageSet' = flavour: spec:
-              lib.nameValuePair spec.attrName (mkPackageSet { inherit flavour; pkgs = final; });
+              lib.nameValuePair spec.attrName (
+                mkPackageSet {
+                  inherit flavour;
+                  ghc = final.haskellWasm.compiler.${spec.attrName};
+                  pkgs = final;
+                }
+              );
           in
           {
-            # Mirrors `pkgs.haskell.packages.<compiler>` & `pkgs.haskellPackages`.
-            haskellWasm.packages = lib.mapAttrs' mkPackageSet' (compilers.availableFor final.stdenv.hostPlatform.system);
+            # Mirrors `pkgs.haskell.compiler.*` and `pkgs.haskell.packages.*`.
+            haskellWasm.compiler = lib.mapAttrs' mkCompiler available;
+            haskellWasm.packages = lib.mapAttrs' mkPackageSet' available;
             haskellWasmPackages = final.haskellWasm.packages.${compilers.all.${compilers.default}.attrName};
           };
       };

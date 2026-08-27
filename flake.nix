@@ -126,9 +126,16 @@
       flake = {
         lib = { inherit mkGhc mkPackageSet; };
 
-        overlays.default = final: _prev: {
-          haskellWasmPackages = mkPackageSet { pkgs = final; };
-        };
+        overlays.default = final: _prev:
+          let
+            mkPackageSet' = flavour: spec:
+              lib.nameValuePair spec.attrName (mkPackageSet { inherit flavour; pkgs = final; });
+          in
+          {
+            # Mirrors `pkgs.haskell.packages.<compiler>` & `pkgs.haskellPackages`.
+            haskellWasm.packages = lib.mapAttrs' mkPackageSet' (compilers.availableFor final.stdenv.hostPlatform.system);
+            haskellWasmPackages = final.haskellWasm.packages.${compilers.all.${compilers.default}.attrName};
+          };
       };
 
       perSystem =

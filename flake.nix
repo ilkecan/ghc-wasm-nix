@@ -33,7 +33,7 @@
       mkGhc =
         {
           pkgs,
-          flavour ? compilers.default,
+          flavour ? compilers.default.flavour,
         }:
         let
           inherit (pkgs.stdenv.hostPlatform) system;
@@ -84,7 +84,7 @@
       mkRawPackageSet =
         {
           pkgs,
-          flavour ? compilers.default,
+          flavour ? compilers.default.flavour,
           packageSetConfig ? (_final: _prev: { }),
           ghc ? mkGhc { inherit flavour pkgs; },
         }:
@@ -96,7 +96,7 @@
       mkPackageSet =
         {
           pkgs,
-          flavour ? compilers.default,
+          flavour ? compilers.default.flavour,
           packageSetConfig ? (_final: _prev: { }),
           ghc ? mkGhc { inherit flavour pkgs; },
         }:
@@ -151,7 +151,7 @@
             # Mirrors `pkgs.haskell.compiler.*` and `pkgs.haskell.packages.*`.
             haskellWasm.compiler = lib.mapAttrs' mkCompiler available;
             haskellWasm.packages = lib.mapAttrs' mkPackageSet' available;
-            haskellWasmPackages = final.haskellWasm.packages.${compilers.all.${compilers.default}.attrName};
+            haskellWasmPackages = final.haskellWasm.packages.${compilers.default.attrName};
           };
       };
 

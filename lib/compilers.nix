@@ -23,6 +23,8 @@ let
     in
     entry
     // {
+      inherit flavour;
+
       # The public attribute. Numbered flavours are exposed as `ghcNNN`, while
       # others such as `gmp` retain their flavour name.
       attrName = if numbered then "ghc${lib.replaceStrings [ "." ] [ "" ] flavour}" else flavour;
@@ -43,7 +45,7 @@ let
 in
 {
   inherit all;
-  inherit (flavours) default;
+  default = all.${flavours.default};
 
   # The flavours with a bindist for this system. ghc-wasm-meta's package set
   # exposes an attribute for every flavour on every system, but the underlying

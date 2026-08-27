@@ -156,7 +156,7 @@
       };
 
       perSystem =
-        { pkgs, system, ... }:
+        { pkgs, system, config, ... }:
         let
           haskellPackages = mkPackageSet { inherit pkgs; };
           inherit (haskellPackages) ghc;
@@ -190,6 +190,8 @@
                     system ${system}
                   '';
             };
+          mkCompilerPackage = flavour: spec:
+            lib.nameValuePair spec.attrName (mkGhc { inherit pkgs flavour; });
         in
         {
           apps = {
@@ -202,9 +204,9 @@
             );
           };
 
-          packages = {
-            inherit ghc;
-            default = ghc;
+          packages = lib.mapAttrs' mkCompilerPackage (compilers.availableFor system) // {
+            ghc = config.packages.${compilers.default.attrName};
+            default = config.packages.ghc;
 
             haddock-repro = import ./repros/haddock.nix {
               inherit pkgs;

@@ -47,6 +47,12 @@
           inherit (spec) version;
         };
 
+      mkCompilerPackage = pkgs: flavour: spec:
+        lib.nameValuePair spec.attrName (mkGhc { inherit pkgs flavour; });
+
+      mkCompilerPackages = pkgs:
+        lib.mapAttrs' (mkCompilerPackage pkgs) (compilers.availableFor pkgs.stdenv.hostPlatform.system);
+
       mkPackageSetBase =
         {
           flavour,
@@ -130,14 +136,7 @@
 
         overlays.default = final: _prev:
           let
-            available = compilers.availableFor final.stdenv.hostPlatform.system;
-            mkCompiler = flavour: spec:
-              lib.nameValuePair spec.attrName (
-                mkGhc {
-                  inherit flavour;
-                  pkgs = final;
-                }
-              );
+            availableCompilers = compilers.availableFor final.stdenv.hostPlatform.system;
             mkPackageSet' = flavour: spec:
               lib.nameValuePair spec.attrName (
                 mkPackageSet {
@@ -149,8 +148,8 @@
           in
           {
             # Mirrors `pkgs.haskell.compiler.*` and `pkgs.haskell.packages.*`.
-            haskellWasm.compiler = lib.mapAttrs' mkCompiler available;
-            haskellWasm.packages = lib.mapAttrs' mkPackageSet' available;
+            haskellWasm.compiler = mkCompilerPackages final;
+            haskellWasm.packages = lib.mapAttrs' mkPackageSet' availableCompilers;
             haskellWasmPackages = final.haskellWasm.packages.${compilers.default.attrName};
           };
       };
@@ -190,8 +189,6 @@
                     system ${system}
                   '';
             };
-          mkCompilerPackage = flavour: spec:
-            lib.nameValuePair spec.attrName (mkGhc { inherit pkgs flavour; });
         in
         {
           apps = {
@@ -204,7 +201,7 @@
             );
           };
 
-          packages = lib.mapAttrs' mkCompilerPackage (compilers.availableFor system) // {
+          packages = mkCompilerPackages pkgs // {
             ghc = config.packages.${compilers.default.attrName};
             default = config.packages.ghc;
 

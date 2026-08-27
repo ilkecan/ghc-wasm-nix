@@ -147,6 +147,8 @@
               );
           in
           {
+            haskellWasm.lib = { inherit mkGhc mkPackageSet; };
+
             # Mirrors `pkgs.haskell.compiler.*` and `pkgs.haskell.packages.*`.
             haskellWasm.compiler = mkCompilerPackages final;
             haskellWasm.packages = lib.mapAttrs' mkPackageSet' availableCompilers;

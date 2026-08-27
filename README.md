@@ -63,7 +63,11 @@ packages.ghc # alias of packages.<default compiler attribute>
 packages.default # alias of packages.ghc
 ```
 
-For use without the overlay, the flake library provides `mkGhc` and `mkPackageSet`. Both accept an upstream flavour name such as `"9.12"`; `mkPackageSet` also accepts `packageSetConfig` and an explicit `ghc`. The overlay instead uses compiler-style attribute names such as `ghc912`.
+The flake library exposes two constructors, `mkGhc` and `mkPackageSet`, through `ghc-wasm-nix.lib`. Applying the overlay also makes them available under `haskellWasm.lib`.
+
+Both constructors accept `pkgs` and an upstream flavour name such as `"9.12"`. `mkPackageSet` additionally accepts `packageSetConfig` and an explicit `ghc`.
+
+The constructors use upstream flavour names, while the compiler and package-set attributes exposed by the overlay use derived compiler-style names such as `ghc912`.
 
 ## Flavours and systems
 

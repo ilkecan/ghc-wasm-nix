@@ -132,7 +132,7 @@
       };
 
       perSystem =
-        { pkgs, ... }:
+        { pkgs, system, ... }:
         let
           haskellPackages = mkPackageSet { inherit pkgs; };
           inherit (haskellPackages) ghc;
@@ -140,6 +140,32 @@
           runtimeExpected = pkgs.writeText "runtime-expected" ''
             wasm runtime ran
           '';
+          mkBindistMetadataCheck = flavour: spec:
+            let
+              inherit (spec) attrName;
+              metaPackages = ghc-wasm-meta.packages.${system};
+              bindist = metaPackages.${spec.metaAttr};
+
+              # ghc-wasm-meta exposes a flavour attribute even on systems where
+              # its bindist is unavailable. Force drvPath to verify that
+              # versions.json advertises an instantiable bindist for this
+              # flavour and system. stringLength discards the string context,
+              # so the bindist cannot become a build dependency.
+              bindistOk = lib.tryEval (lib.stringLength bindist.drvPath);
+            in
+            {
+              name = "bindist-metadata-${attrName}";
+              value =
+                if !bindistOk.success then
+                  throw "bindist-metadata-${attrName}: could not instantiate ghc-wasm-meta bindist ${spec.metaAttr} for ${system} (flavour ${flavour})"
+                else
+                  pkgs.writeText "bindist-metadata-${attrName}-check" ''
+                    flavour ${flavour}
+                    version ${spec.version}
+                    bindist ${spec.metaAttr}
+                    system ${system}
+                  '';
+            };
         in
         {
           apps = {
@@ -172,7 +198,7 @@
             };
           };
 
-          checks = {
+          checks = lib.mapAttrs' mkBindistMetadataCheck (compilers.availableFor system) // {
             bindist-toolchain = haskellPackages.callPackage ./checks/bindist-toolchain { };
             haddock = haskellPackages.callPackage ./checks/haddock { };
             runtime-node = pkgs.testers.testEqualContents {

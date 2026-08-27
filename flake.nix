@@ -192,13 +192,16 @@
         in
         {
           apps = {
-            update-versions.program = lib.getExe (
-              pkgs.writeShellApplication {
-                name = "update-versions";
-                runtimeInputs = with pkgs; [ nushell ];
-                text = ''exec ${./scripts/update-versions.nu} ${ghc-wasm-meta} > "''${1:-versions.json}"'';
-              }
-            );
+            update-versions = {
+              program = lib.getExe (
+                pkgs.writeShellApplication {
+                  name = "update-versions";
+                  runtimeInputs = with pkgs; [ nushell ];
+                  text = ''exec ${./scripts/update-versions.nu} ${ghc-wasm-meta} > "''${1:-versions.json}"'';
+                }
+              );
+              meta.description = "Update compiler metadata from ghc-wasm-meta's ghcup YAML";
+            };
           };
 
           packages = mkCompilerPackages pkgs // {

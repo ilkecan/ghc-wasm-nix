@@ -53,10 +53,10 @@
           packageSetConfig,
           pkgs,
           stdenv,
+          ghc,
         }:
         let
           spec = compilers.all.${flavour};
-          ghc = mkGhc { inherit flavour pkgs; };
           buildHaskellPackages =
             if pkgs.haskell.packages ? ${spec.bootstrapAttr} then
               pkgs.haskell.packages.${spec.bootstrapAttr}
@@ -86,9 +86,10 @@
           pkgs,
           flavour ? compilers.default,
           packageSetConfig ? (_final: _prev: { }),
+          ghc ? mkGhc { inherit flavour pkgs; },
         }:
         mkPackageSetBase {
-          inherit flavour packageSetConfig pkgs;
+          inherit flavour packageSetConfig pkgs ghc;
           stdenv = pkgs.pkgsCross.wasi32.stdenv;
         };
 
@@ -97,13 +98,14 @@
           pkgs,
           flavour ? compilers.default,
           packageSetConfig ? (_final: _prev: { }),
+          ghc ? mkGhc { inherit flavour pkgs; },
         }:
         let
           inherit (pkgs) lib;
           wasmPkgs = pkgs.pkgsCross.wasi32;
         in
         mkPackageSetBase {
-          inherit flavour pkgs;
+          inherit flavour pkgs ghc;
           packageSetConfig = lib.composeManyExtensions [
             (import ./lib/configuration-wasm.nix)
             packageSetConfig

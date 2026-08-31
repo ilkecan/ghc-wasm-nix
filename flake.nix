@@ -219,40 +219,45 @@
           checks = lib.mapAttrs' mkBindistMetadataCheck (compilers.availableFor system) // {
             bindist-toolchain = haskellPackages.callPackage ./checks/bindist-toolchain { };
             haddock = haskellPackages.callPackage ./checks/haddock { };
+
             runtime-node = pkgs.testers.testEqualContents {
               assertion = "Node runs the wasm fixture";
               actual = pkgs.runCommand "runtime-node-output" { } ''
-                ${pkgs.nodejs}/bin/node ${./checks/runtime/run-node.mjs} \
+                ${lib.getExe pkgs.nodejs} ${./checks/runtime/run-node.mjs} \
                   ${runtimeFixture}/bin/runtime-fixture.wasm > "$out"
               '';
               expected = runtimeExpected;
             };
-            runtime-wasmtime = pkgs.testers.testEqualContents {
-              assertion = "Wasmtime runs the wasm fixture";
-              actual = pkgs.runCommand "runtime-wasmtime-output" { } ''
-                ${pkgs.wasmtime}/bin/wasmtime run -C cache=n \
-                  ${runtimeFixture}/bin/runtime-fixture.wasm > "$out"
-              '';
-              expected = runtimeExpected;
-            };
-            runtime-wasmer = pkgs.testers.testEqualContents {
-              assertion = "Wasmer runs the wasm fixture";
-              actual = pkgs.runCommand "runtime-wasmer-output" { } ''
-                ${pkgs.wasmer}/bin/wasmer run \
-                  ${runtimeFixture}/bin/runtime-fixture.wasm > "$out"
-              '';
-              expected = runtimeExpected;
-            };
+
             runtime-wasmedge = pkgs.testers.testEqualContents {
               assertion = "WasmEdge runs the wasm fixture";
               actual = pkgs.runCommand "runtime-wasmedge-output" { } ''
-                ${pkgs.wasmedge}/bin/wasmedge run \
+                ${lib.getExe pkgs.wasmedge} run \
                   ${runtimeFixture}/bin/runtime-fixture.wasm > "$out"
               '';
               expected = runtimeExpected;
             };
-            template-haskell = haskellPackages.callPackage ./checks/template-haskell { };
+
+            runtime-wasmer = pkgs.testers.testEqualContents {
+              assertion = "Wasmer runs the wasm fixture";
+              actual = pkgs.runCommand "runtime-wasmer-output" { } ''
+                ${lib.getExe pkgs.wasmer} run \
+                  ${runtimeFixture}/bin/runtime-fixture.wasm > "$out"
+              '';
+              expected = runtimeExpected;
+            };
+
+            runtime-wasmtime = pkgs.testers.testEqualContents {
+              assertion = "Wasmtime runs the wasm fixture";
+              actual = pkgs.runCommand "runtime-wasmtime-output" { } ''
+                ${lib.getExe pkgs.wasmtime} run -C cache=n \
+                  ${runtimeFixture}/bin/runtime-fixture.wasm > "$out"
+              '';
+              expected = runtimeExpected;
+            };
+
             shared-libraries = haskellPackages.callPackage ./checks/shared-libraries { };
+            template-haskell = haskellPackages.callPackage ./checks/template-haskell { };
           };
         };
     };

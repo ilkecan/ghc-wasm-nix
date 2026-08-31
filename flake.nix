@@ -2,10 +2,10 @@
   description = "A small nixpkgs consumer for GHC's wasm backend";
 
   inputs = {
-    nixpkgs.url = "https://channels.nixos.org/nixos-unstable/nixexprs.tar.xz";
+    nixpkgs.url = "nixpkgs-unstable";
 
     flake-parts = {
-      url = "github:hercules-ci/flake-parts";
+      url = "flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
 

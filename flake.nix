@@ -210,16 +210,6 @@
             ghc = config.packages.${compilers.default.attrName};
             default = config.packages.ghc;
 
-            haddock-repro = import ./repros/haddock.nix {
-              inherit pkgs;
-              mkPackageSet = mkRawPackageSet;
-            };
-
-            interpreter-repro = import ./repros/interpreter.nix {
-              inherit pkgs;
-              mkPackageSet = mkRawPackageSet;
-            };
-
             shared-libraries-repro = import ./repros/shared-libraries.nix {
               inherit pkgs;
               mkPackageSet = mkRawPackageSet;

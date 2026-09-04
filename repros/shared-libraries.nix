@@ -13,10 +13,6 @@ let
         prev.mkDerivation (
           args
           // {
-            # keep unrelated wasm integration failures out of this repro
-            enableExternalInterpreter = false;
-            enableLibraryProfiling = false;
-            buildTools = (args.buildTools or [ ]) ++ [ final.ghc.nodejs ];
             configureFlags = (args.configureFlags or [ ]) ++ [
               "--with-ar=${final.ghc.wasiSdk}/bin/llvm-ar"
               "--with-gcc=${final.ghc.wasiSdk}/bin/wasm32-wasi-clang"

@@ -4,8 +4,7 @@
 # wasm.
 #
 # Upstream status:
-# - nixpkgs#553410: wasm interpreter setup, Node, and profiling defaults.
-# - nixpkgs#553415: target Haddock selection for cross builds.
+# - nixpkgs#558928: enable shared libraries for GHC's wasm interpreter
 
 final: prev: {
   # apply these generic-builder arguments to every package in the set
@@ -14,44 +13,25 @@ final: prev: {
     prev.mkDerivation (
       args
       // {
-        # This option makes nixpkgs pass an iserv-proxy wrapper to GHC. The
-        # wasm compiler starts its own wasm iserv through `dyld.mjs`, so it
-        # does not need that wrapper. The proxy also pulls in the target
-        # `network` package, which fails to build in this package set.
-        enableExternalInterpreter = false;
-
-        # The wasm interpreter loads dynamic objects. With library profiling
-        # enabled, Template Haskell tries to load profiled dynamic objects,
-        # which the Cabal build does not produce.
-        enableLibraryProfiling = false;
 
         # GHC's wasm RTS linker requires shared libraries for splices that load
         # dependencies, but generic-builder.nix disables them because wasi32 is
         # `isStatic`.
         enableSharedLibraries = true;
 
-        # Cabal uses the last value for repeated `--with-*` options.
-        configureFlags =
-          (args.configureFlags or [ ])
-          ++ [
-            # generic-builder.nix does not select Haddock for cross builds, so
-            # Cabal can find a native Haddock built with a different GHC.
-            "--with-haddock=${final.ghc.targetPrefix}haddock"
-          ]
-          ++ [
-            # Ideally generic-builder.nix would let an external compiler retain
-            # the tools recorded in GHC's settings. Reading the installed
-            # settings during Nix evaluation would require IFD, so the bindist
-            # adapter exposes wasiSdk explicitly.
-            "--with-ar=${final.ghc.wasiSdk}/bin/llvm-ar"
-            "--with-gcc=${final.ghc.wasiSdk}/bin/wasm32-wasi-clang"
-            "--with-ld=${final.ghc.wasiSdk}/bin/wasm-ld"
-          ]
-          ++ [
-            # Use the strip tool from the WASI SDK paired with the bindist
-            # instead of nixpkgs's independently selected target tool.
-            "--with-strip=${final.ghc.wasiSdk}/bin/llvm-strip"
-          ];
+        configureFlags = (args.configureFlags or [ ]) ++ [
+          # Ideally generic-builder.nix would let an external compiler retain
+          # the tools recorded in GHC's settings. Reading the installed
+          # settings during Nix evaluation would require IFD, so the bindist
+          # adapter exposes wasiSdk explicitly.
+          "--with-ar=${final.ghc.wasiSdk}/bin/llvm-ar"
+          "--with-gcc=${final.ghc.wasiSdk}/bin/wasm32-wasi-clang"
+          "--with-ld=${final.ghc.wasiSdk}/bin/wasm-ld"
+
+          # Use the strip tool from the WASI SDK paired with the bindist
+          # instead of nixpkgs's independently selected target tool.
+          "--with-strip=${final.ghc.wasiSdk}/bin/llvm-strip"
+        ];
       }
     );
 }

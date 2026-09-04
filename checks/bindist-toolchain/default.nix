@@ -32,7 +32,6 @@ mkDerivation {
 
   # Building the GHCi object invokes Cabal's configured linker with `-r`.
   enableLibraryForGhci = true;
-  doHaddock = false;
 
   # Installing the library invokes Cabal's configured strip tool.
   dontStrip = false;

@@ -30,19 +30,22 @@
         flavours = import ./flavours.nix;
       };
 
+      # Reinstantiates upstream `pkgs/wasm32-wasi-ghc.nix` against the caller
+      # `pkgs`.
       mkGhc =
         {
           pkgs,
           flavour ? compilers.default.flavour,
         }:
         let
-          inherit (pkgs.stdenv.hostPlatform) system;
-          metaPackages = ghc-wasm-meta.packages.${system};
           spec = compilers.all.${flavour};
+          ghc = pkgs.callPackage "${ghc-wasm-meta.outPath}/pkgs/wasm32-wasi-ghc.nix" { inherit flavour; };
+          # Internal SDK in `wasm32-wasi-ghc.nix` is not addressable and
+          # `ghc-wasm-meta.packages.wasi-sdk` uses the upstream `pkgs`.
+          wasiSdk = pkgs.callPackage "${ghc-wasm-meta.outPath}/pkgs/wasi-sdk.nix" { };
         in
         import ./lib/ghc-bindist.nix { inherit (pkgs) lib; } {
-          ghc = metaPackages.${spec.metaAttr};
-          wasiSdk = metaPackages.wasi-sdk;
+          inherit ghc wasiSdk;
           inherit (spec) version;
         };
 
@@ -173,26 +176,23 @@
           mkBindistMetadataCheck = flavour: spec:
             let
               inherit (spec) attrName;
-              metaPackages = ghc-wasm-meta.packages.${system};
-              bindist = metaPackages.${spec.metaAttr};
+              compiler = config.packages.${spec.attrName};
 
-              # ghc-wasm-meta exposes a flavour attribute even on systems where
-              # its bindist is unavailable. Force drvPath to verify that
-              # versions.json advertises an instantiable bindist for this
-              # flavour and system. stringLength discards the string context,
-              # so the bindist cannot become a build dependency.
-              bindistOk = lib.tryEval (lib.stringLength bindist.drvPath);
+              # Force drvPath to verify that versions.json advertises an
+              # instantiable bindist for this flavour and system. stringLength
+              # discards the string context, so the bindist cannot become a
+              # build dependency.
+              bindistOk = lib.tryEval (lib.stringLength compiler.drvPath);
             in
             {
               name = "bindist-metadata-${attrName}";
               value =
                 if !bindistOk.success then
-                  throw "bindist-metadata-${attrName}: could not instantiate ghc-wasm-meta bindist ${spec.metaAttr} for ${system} (flavour ${flavour})"
+                  throw "bindist-metadata-${attrName}: could not instantiate compiler ${attrName} for ${system} (flavour ${flavour})"
                 else
                   pkgs.writeText "bindist-metadata-${attrName}-check" ''
                     flavour ${flavour}
                     version ${spec.version}
-                    bindist ${spec.metaAttr}
                     system ${system}
                   '';
             };

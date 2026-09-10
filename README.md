@@ -58,10 +58,12 @@ haskellWasm.lib.mkPackageSet { inherit pkgs; flavour = "9.12"; }
 The flake also exposes compiler derivations directly:
 
 ```nix
-packages.ghc914
-packages.ghc # alias of packages.<default compiler attribute>
-packages.default # alias of packages.ghc
+packages.<system>.ghc914
+packages.<system>.ghc # alias of packages.<system>.<default compiler attribute>
+packages.<system>.default # alias of packages.<system>.ghc
 ```
+
+### Library
 
 The flake library exposes two constructors, `mkGhc` and `mkPackageSet`, through `ghc-wasm-nix.lib`. Applying the overlay also makes them available under `haskellWasm.lib`.
 

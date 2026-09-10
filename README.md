@@ -63,6 +63,19 @@ packages.<system>.ghc # alias of packages.<system>.<default compiler attribute>
 packages.<system>.default # alias of packages.<system>.ghc
 ```
 
+Per flavour package sets are also exposed for command line use:
+
+```nix
+legacyPackages.<system>.ghc914 # package set
+legacyPackages.<system>.ghc914.ghc # alias of `packages.<system>.ghc914`
+```
+
+For example:
+
+```sh
+nix build .#legacyPackages.x86_64-linux.ghc914.miso
+```
+
 ### Library
 
 The flake library exposes two constructors, `mkGhc` and `mkPackageSet`, through `ghc-wasm-nix.lib`. Applying the overlay also makes them available under `haskellWasm.lib`.

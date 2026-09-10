@@ -124,6 +124,24 @@
             ] (oldAttrs.configureFlags or [ ]);
           }) wasmPkgs.stdenv;
         };
+
+      # Deliberately unfiltered by nixpkgs support; unsupported flavours fail
+      # lazily on access.
+      mkFlavourPackageSets = pkgs:
+        let
+          availableCompilers = compilers.availableFor pkgs.stdenv.hostPlatform.system;
+        in
+        compilerSet:
+        lib.mapAttrs'
+          (flavour: spec:
+            lib.nameValuePair spec.attrName (
+              mkPackageSet {
+                inherit flavour pkgs;
+                ghc = compilerSet.${spec.attrName};
+              }
+            )
+          )
+          availableCompilers;
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
       # Build the flake on every system exposed by nixpkgs for which
@@ -134,23 +152,12 @@
         lib = { inherit mkGhc mkPackageSet; };
 
         overlays.default = final: _prev:
-          let
-            availableCompilers = compilers.availableFor final.stdenv.hostPlatform.system;
-            mkPackageSet' = flavour: spec:
-              lib.nameValuePair spec.attrName (
-                mkPackageSet {
-                  inherit flavour;
-                  ghc = final.haskellWasm.compiler.${spec.attrName};
-                  pkgs = final;
-                }
-              );
-          in
           {
             haskellWasm.lib = { inherit mkGhc mkPackageSet; };
 
             # Mirrors `pkgs.haskell.compiler.*` and `pkgs.haskell.packages.*`.
             haskellWasm.compiler = mkCompilerPackages final;
-            haskellWasm.packages = lib.mapAttrs' mkPackageSet' availableCompilers;
+            haskellWasm.packages = mkFlavourPackageSets final final.haskellWasm.compiler;
             haskellWasmPackages = final.haskellWasm.packages.${compilers.default.attrName};
           };
       };
@@ -204,16 +211,6 @@
             };
           };
 
-          packages = mkCompilerPackages pkgs // {
-            ghc = config.packages.${compilers.default.attrName};
-            default = config.packages.ghc;
-
-            shared-libraries-repro = import ./repros/shared-libraries.nix {
-              inherit pkgs;
-              mkPackageSet = mkRawPackageSet;
-            };
-          };
-
           checks = lib.mapAttrs' mkBindistMetadataCheck (compilers.availableFor system) // {
             bindist-toolchain = haskellPackages.callPackage ./checks/bindist-toolchain { };
             haddock = haskellPackages.callPackage ./checks/haddock { };
@@ -257,6 +254,18 @@
             shared-libraries = haskellPackages.callPackage ./checks/shared-libraries { };
             template-haskell = haskellPackages.callPackage ./checks/template-haskell { };
           };
+
+          packages = mkCompilerPackages pkgs // {
+            ghc = config.packages.${compilers.default.attrName};
+            default = config.packages.ghc;
+
+            shared-libraries-repro = import ./repros/shared-libraries.nix {
+              inherit pkgs;
+              mkPackageSet = mkRawPackageSet;
+            };
+          };
+
+          legacyPackages = mkFlavourPackageSets pkgs config.packages;
         };
     };
 }

@@ -29,9 +29,6 @@ let
       # others such as `gmp` retain their flavour name.
       attrName = if numbered then "ghc${lib.replaceStrings [ "." ] [ "" ] flavour}" else flavour;
 
-      # The attribute this bindist has in ghc-wasm-meta's package set.
-      metaAttr = "wasm32-wasi-ghc-${lib.replaceStrings [ "." ] [ "_" ] flavour}";
-
       # The native compiler that builds Setup.hs and the host-side tools.
       # Prefer the patch-specific bootstrap attribute derived from `version`.
       # Callers should fall back to the shorter series attribute when the exact

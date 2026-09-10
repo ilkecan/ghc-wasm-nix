@@ -42,7 +42,6 @@
         in
         import ./lib/ghc-bindist.nix { inherit (pkgs) lib; } {
           ghc = metaPackages.${spec.metaAttr};
-          inherit (metaPackages) nodejs;
           wasiSdk = metaPackages.wasi-sdk;
           inherit (spec) version;
         };

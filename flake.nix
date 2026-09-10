@@ -159,7 +159,6 @@
         { pkgs, system, config, ... }:
         let
           haskellPackages = mkPackageSet { inherit pkgs; };
-          inherit (haskellPackages) ghc;
           runtimeFixture = haskellPackages.callPackage ./checks/runtime { };
           runtimeExpected = pkgs.writeText "runtime-expected" ''
             wasm runtime ran

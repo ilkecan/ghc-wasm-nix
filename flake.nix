@@ -49,11 +49,33 @@
           inherit (spec) version;
         };
 
+      # Builds a `wasm32-wasi-cabal` wrapper around the given `cabal-install`,
+      # seeded from the upstream config for `flavour`.
+      mkCabalWrapper =
+        {
+          pkgs,
+          cabal-install ? pkgs.cabal-install,
+          flavour ? compilers.default.flavour,
+        }:
+        let
+          spec = compilers.all.${flavour};
+        in
+        pkgs.callPackage ./lib/wrap-cabal.nix {
+          inherit flavour cabal-install;
+          configFile = "${ghc-wasm-meta}/${spec.cabalConfig}";
+        };
+
       mkCompilerPackage = pkgs: flavour: spec:
         lib.nameValuePair spec.attrName (mkGhc { inherit pkgs flavour; });
 
       mkCompilerPackages = pkgs:
         lib.mapAttrs' (mkCompilerPackage pkgs) (compilers.availableFor pkgs.stdenv.hostPlatform.system);
+
+      mkCabalPackage = pkgs: flavour: spec:
+        lib.nameValuePair spec.attrName (mkCabalWrapper { inherit pkgs flavour; });
+
+      mkCabalPackages = pkgs:
+        lib.mapAttrs' (mkCabalPackage pkgs) (compilers.availableFor pkgs.stdenv.hostPlatform.system);
 
       mkPackageSetBase =
         {
@@ -146,17 +168,19 @@
           )
           availableCompilers;
     in
-    flake-parts.lib.mkFlake { inherit inputs; } {
+    flake-parts.lib.mkFlake { inherit inputs; } ({ config, ... }: {
       # Build the flake on every system exposed by nixpkgs for which
       # ghc-wasm-meta publishes at least one compiler bindist.
       systems = lib.intersectLists compilers.systems lib.systems.flakeExposed;
 
       flake = {
-        lib = { inherit mkGhc mkPackageSet; };
+        lib = { inherit mkCabalWrapper mkGhc mkPackageSet; };
 
         overlays.default = final: _prev:
           {
-            haskellWasm.lib = { inherit mkGhc mkPackageSet; };
+            haskellWasm.cabal = mkCabalPackages final;
+            haskellWasm.lib = config.flake.lib;
+            haskellWasmCabal = final.haskellWasm.cabal.${compilers.default.attrName};
 
             # Mirrors `pkgs.haskell.compiler.*` and `pkgs.haskell.packages.*`.
             haskellWasm.compiler = mkCompilerPackages final;
@@ -213,6 +237,13 @@
 
           checks = lib.mapAttrs' mkBindistMetadataCheck (compilers.availableFor system) // {
             bindist-toolchain = haskellPackages.callPackage ./checks/bindist-toolchain { };
+
+            cabal-routing = pkgs.callPackage ./checks/cabal-routing {
+              cabalWrapper = config.packages.cabal;
+              ghc = config.packages.ghc;
+              expectedConfig = "${ghc-wasm-meta}/${compilers.default.cabalConfig}";
+            };
+
             haddock = haskellPackages.callPackage ./checks/haddock { };
 
             runtime-node = pkgs.testers.testEqualContents {
@@ -255,17 +286,21 @@
             template-haskell = haskellPackages.callPackage ./checks/template-haskell { };
           };
 
-          packages = mkCompilerPackages pkgs // {
-            ghc = config.packages.${compilers.default.attrName};
+          packages = {
+            cabal = config.packages."cabal-${compilers.default.attrName}";
             default = config.packages.ghc;
+            ghc = config.packages.${compilers.default.attrName};
 
             shared-libraries-repro = import ./repros/shared-libraries.nix {
               inherit pkgs;
               mkPackageSet = mkRawPackageSet;
             };
-          };
+          }
+          // mkCompilerPackages pkgs
+          // lib.mapAttrs' (name: cabal: lib.nameValuePair "cabal-${name}" cabal) (mkCabalPackages pkgs)
+          ;
 
           legacyPackages = mkFlavourPackageSets pkgs config.packages;
         };
-    };
+    });
 }

@@ -45,23 +45,33 @@ Apply the default overlay and build packages with `haskellWasmPackages`:
 
 ## Interface
 
-The overlay exposes a compiler attribute for every bindist available on the current Nix system, plus a corresponding lazily instantiated package-set attribute:
+The overlay exposes per-flavour Cabal wrappers, compilers and package sets, with aliases for the configured defaults:
 
 ```nix
+haskellWasm.cabal.ghc914
 haskellWasm.compiler.ghc914
 haskellWasm.packages.ghc914
+
+haskellWasmCabal # alias of haskellWasm.cabal.<default compiler attribute>
 haskellWasmPackages # alias of haskellWasm.packages.<default compiler attribute>
+
+haskellWasm.lib.mkCabalWrapper { inherit pkgs; flavour = "9.12"; }
 haskellWasm.lib.mkGhc { inherit pkgs; flavour = "9.12"; }
 haskellWasm.lib.mkPackageSet { inherit pkgs; flavour = "9.12"; }
 ```
 
-The flake also exposes compiler derivations directly:
+The flake also exposes compiler and Cabal wrapper derivations directly:
 
 ```nix
 packages.<system>.ghc914
 packages.<system>.ghc # alias of packages.<system>.<default compiler attribute>
 packages.<system>.default # alias of packages.<system>.ghc
+
+packages.<system>.cabal-ghc914
+packages.<system>.cabal # alias of packages.<system>.cabal-<default compiler attribute>
 ```
+
+The Cabal packages provide `wasm32-wasi-cabal`, without bundling a compiler. Put the matching wasm compiler on `PATH` alongside the wrapper.
 
 Per flavour package sets are also exposed for command line use:
 
@@ -78,11 +88,11 @@ nix build .#legacyPackages.x86_64-linux.ghc914.miso
 
 ### Library
 
-The flake library exposes two constructors, `mkGhc` and `mkPackageSet`, through `ghc-wasm-nix.lib`. Applying the overlay also makes them available under `haskellWasm.lib`.
+The flake library exposes three constructors, `mkGhc`, `mkPackageSet` and `mkCabalWrapper`, through `ghc-wasm-nix.lib`. Applying the overlay also makes them available under `haskellWasm.lib`.
 
-Both constructors accept `pkgs` and an upstream flavour name such as `"9.12"`. `mkPackageSet` additionally accepts `packageSetConfig` and an explicit `ghc`.
+All constructors accept `pkgs` and an upstream flavour name such as `"9.12"`. `mkCabalWrapper` additionally accepts an explicit `cabal-install`. `mkPackageSet` additionally accepts `packageSetConfig` and an explicit `ghc`.
 
-The constructors use upstream flavour names, while the compiler and package-set attributes exposed by the overlay use derived compiler-style names such as `ghc912`.
+The constructors use upstream flavour names, while the compiler, Cabal wrapper and package-set attributes exposed by the overlay use derived compiler-style names such as `ghc912`.
 
 ## Flavours and systems
 
@@ -106,6 +116,7 @@ The default flavour is selected in `flavours.nix` and is currently 9.14. `versio
 The checks for the default flavour cover:
 
 - Haskell and C source builds through nixpkgs's Haskell builder
+- offline Cabal CLI configuration and compiler routing
 - Template Haskell, including splices that load package dependencies
 - shared Haskell libraries and Haddock
 - executables under Node.js, Wasmtime and Wasmer

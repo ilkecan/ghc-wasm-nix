@@ -1,0 +1,9 @@
+cabal-version: 3.0
+name: cabal-routing
+version: 0.0.0.0
+build-type: Simple
+
+executable cabal-routing
+  main-is: Main.hs
+  build-depends: base
+  default-language: Haskell2010

@@ -54,10 +54,6 @@ haskellWasm.packages.ghc914
 
 haskellWasmCabal # alias of haskellWasm.cabal.<default compiler attribute>
 haskellWasmPackages # alias of haskellWasm.packages.<default compiler attribute>
-
-haskellWasm.lib.mkCabalWrapper { inherit pkgs; flavour = "9.12"; }
-haskellWasm.lib.mkGhc { inherit pkgs; flavour = "9.12"; }
-haskellWasm.lib.mkPackageSet { inherit pkgs; flavour = "9.12"; }
 ```
 
 The flake also exposes compiler and Cabal wrapper derivations directly:

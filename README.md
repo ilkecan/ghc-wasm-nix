@@ -71,7 +71,7 @@ packages.<system>.cabal-ghc914
 packages.<system>.cabal # alias of packages.<system>.cabal-<default compiler attribute>
 ```
 
-The Cabal packages provide `wasm32-wasi-cabal`, without bundling a compiler. Put the matching wasm compiler on `PATH` alongside the wrapper.
+The Cabal packages provide `wasm32-wasi-cabal` without bundling a compiler.
 
 Per flavour package sets are also exposed for command line use:
 
@@ -85,6 +85,32 @@ For example:
 ```sh
 nix build .#legacyPackages.x86_64-linux.ghc914.miso
 ```
+
+### Development shells
+
+Add the matching Cabal wrapper to `nativeBuildInputs`:
+
+```nix
+pkgs.haskellWasmPackages.shellFor {
+  packages = hpkgs: [ (hpkgs.callCabal2nix "my-app" ./. { }) ];
+  nativeBuildInputs = [
+    pkgs.haskellWasmCabal
+  ];
+}
+```
+
+For a non-default compiler, select the package set and wrapper explicitly:
+
+```nix
+pkgs.haskellWasm.packages.ghc912.shellFor {
+  packages = hpkgs: [ (hpkgs.callCabal2nix "my-app" ./. { }) ];
+  nativeBuildInputs = [
+    pkgs.haskellWasm.cabal.ghc912
+  ];
+}
+```
+
+The wrapper resolves the prefixed wasm tools from `PATH`, so do not combine different wasm compilers in one shell.
 
 ### Library
 

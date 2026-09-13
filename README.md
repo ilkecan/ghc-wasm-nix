@@ -145,7 +145,7 @@ The checks for the default flavour cover:
 - offline Cabal CLI configuration and compiler routing
 - Template Haskell, including splices that load package dependencies
 - shared Haskell libraries and Haddock
-- executables under Node.js, Wasmtime and Wasmer
+- executables under Node.js, WasmEdge, Wasmtime and Wasmer
 - use of the C toolchain shipped with the bindist
 
 These checks cover the integration paths above, not compatibility with every Haskell package. Individual packages must build for `wasm32-wasi` and use only APIs available under WASI; packages relying on unavailable platform facilities may fail to build.

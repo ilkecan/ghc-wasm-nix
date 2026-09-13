@@ -29,6 +29,13 @@ let
       # others such as `gmp` retain their flavour name.
       attrName = if numbered then "ghc${lib.replaceStrings [ "." ] [ "" ] flavour}" else flavour;
 
+      # Seed config for the cabal wrapper: head for unnumbered streams, legacy
+      # only for 9.6 and 9.8 and TH for other numbered streams.
+      cabalConfig =
+        if !numbered then "cabal.head.config"
+        else if lib.elem flavour [ "9.6" "9.8" ] then "cabal.legacy.config"
+        else "cabal.th.config";
+
       # The native compiler that builds Setup.hs and the host-side tools.
       # Prefer the patch-specific bootstrap attribute derived from `version`.
       # Callers should fall back to the shorter series attribute when the exact

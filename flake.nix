@@ -39,10 +39,10 @@
         }:
         let
           spec = compilers.all.${flavour};
-          ghc = pkgs.callPackage "${ghc-wasm-meta.outPath}/pkgs/wasm32-wasi-ghc.nix" { inherit flavour; };
+          ghc = pkgs.callPackage "${ghc-wasm-meta}/pkgs/wasm32-wasi-ghc.nix" { inherit flavour; };
           # Internal SDK in `wasm32-wasi-ghc.nix` is not addressable and
           # `ghc-wasm-meta.packages.wasi-sdk` uses the upstream `pkgs`.
-          wasiSdk = pkgs.callPackage "${ghc-wasm-meta.outPath}/pkgs/wasi-sdk.nix" { };
+          wasiSdk = pkgs.callPackage "${ghc-wasm-meta}/pkgs/wasi-sdk.nix" { };
         in
         import ./lib/ghc-bindist.nix { inherit (pkgs) lib; } {
           inherit ghc wasiSdk;

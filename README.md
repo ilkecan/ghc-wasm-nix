@@ -108,6 +108,33 @@ pkgs.haskellWasm.packages.ghc912.shellFor {
 
 The wrapper resolves the prefixed wasm tools from `PATH`, so do not combine different wasm compilers in one shell.
 
+It is preferable to take every tool from your own `pkgs` rather than from `ghc-wasm-meta`, to avoid instantiating multiple nixpkgs and keep a smaller dependency closure:
+
+```nix
+pkgs.haskellWasmPackages.shellFor {
+  packages = hpkgs: [ (hpkgs.callCabal2nix "my-app" ./. { }) ];
+  nativeBuildInputs = with pkgs; [
+    # build
+    haskellWasmCabal # wasm-aware `cabal` wrapper
+    nodejs_latest # tracks the wrapper pin. Runs JS-side tooling (post-link.mjs glue, reactor instantiation checks under node)
+
+    # post-processing
+    binaryen # provides `wasm-opt`
+    wasm-tools # `strip`, `validate` and friends
+    wizer # pre-initializer: trades larger artifacts for less startup work
+
+    # runtimes for executing command modules
+    wasmedge
+    wasmer
+    wasmtime
+  ];
+}
+```
+
+Two things to keep in mind when post-processing this toolchain output:
+- Do not pass `-all` to `wasm-opt`, as it enables experimental proposals that engines might not support. GHC's `target_features` already selects the required features.
+- Generate JSFFI glue before running `strip`, because stripping removes the `ghc_wasm_jsffi` custom section that the glue generator reads.
+
 ### Library
 
 The flake library exposes three constructors, `mkGhc`, `mkPackageSet` and `mkCabalWrapper`, through `ghc-wasm-nix.lib`. Applying the overlay also makes them available under `haskellWasm.lib`.

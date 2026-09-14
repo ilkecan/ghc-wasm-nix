@@ -144,8 +144,6 @@ The checks for the default flavour cover:
 - executables under Node.js, WasmEdge, Wasmtime and Wasmer
 - use of the C toolchain shipped with the bindist
 
-These checks cover the integration paths above, not compatibility with every Haskell package. Individual packages must build for `wasm32-wasi` and use only APIs available under WASI; packages relying on unavailable platform facilities may fail to build.
+Passing these checks does not mean that every Haskell package will build for `wasm32-wasi`. Packages that rely on facilities unavailable under WASI may still fail. Other flavours are checked only for bindist metadata and availability.
 
-Checks for other flavours validate bindist metadata and availability, but do not run the full package-set regressions. A listed bindist is therefore not a claim that every nixpkgs Haskell package works with that flavour.
-
-Library profiling is disabled. GHC's wasm backend supports profiling, but using Template Haskell with profiling enabled requires both profiled and profiled-shared versions of the Haskell libraries in a package's dependency closure. Building these additional versions increases build cost, so this integration does not currently provide them.
+Library profiling is disabled because Template Haskell would require profiled and profiled-shared variants throughout the dependency closure.

@@ -284,6 +284,14 @@
 
             shared-libraries = haskellPackages.callPackage ./checks/shared-libraries { };
             template-haskell = haskellPackages.callPackage ./checks/template-haskell { };
+
+            wasm-opt = pkgs.runCommand "wasm-opt-check" { } ''
+              input="${runtimeFixture}/bin/runtime-fixture.wasm"
+              ${pkgs.binaryen}/bin/wasm-opt -Oz "$input" -o optimized.wasm
+              test "$(stat -c %s optimized.wasm)" -lt "$(stat -c %s "$input")"
+              ${pkgs.wasm-tools}/bin/wasm-tools validate optimized.wasm
+              cp optimized.wasm "$out"
+            '';
           };
 
           packages = {

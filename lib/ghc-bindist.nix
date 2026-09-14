@@ -4,6 +4,7 @@
 
 {
   ghc,
+  nodejs,
   version,
   wasiSdk,
   targetPrefix ? "wasm32-wasi-",
@@ -22,7 +23,7 @@ ghc.overrideAttrs (oldAttrs: {
     hadrian = null;
     hasHaddock = true;
 
-    inherit wasiSdk;
+    inherit nodejs wasiSdk;
   };
 
   meta = (oldAttrs.meta or { }) // {

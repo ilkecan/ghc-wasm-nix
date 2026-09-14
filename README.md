@@ -116,7 +116,7 @@ pkgs.haskellWasmPackages.shellFor {
   nativeBuildInputs = with pkgs; [
     # build
     haskellWasmCabal # wasm-aware `cabal` wrapper
-    nodejs_latest # tracks the wrapper pin. Runs JS-side tooling (post-link.mjs glue, reactor instantiation checks under node)
+    haskellWasmPackages.ghc.nodejs # runs JS-side tooling (post-link.mjs glue, reactor instantiation checks under node)
 
     # post-processing
     binaryen # provides `wasm-opt`
